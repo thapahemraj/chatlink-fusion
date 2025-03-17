@@ -14,11 +14,20 @@ export const VisitorCounter = () => {
     // Increment count only if this is a new session
     if (!sessionStorage.getItem('counted-visit')) {
       const newCount = currentCount + 1;
+      
+      // Store the new count in localStorage
       localStorage.setItem('visitor-count', newCount.toString());
+      
+      // Mark this session as counted
       sessionStorage.setItem('counted-visit', 'true');
+      
+      // Update state with the new count
       setVisitorCount(newCount);
+      console.log('New visitor counted. Total count:', newCount);
     } else {
+      // For returning visitors in the same session, just display the current count
       setVisitorCount(currentCount);
+      console.log('Returning visitor. Total count:', currentCount);
     }
   }, []);
   
