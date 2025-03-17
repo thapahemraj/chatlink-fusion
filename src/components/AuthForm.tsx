@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthFormProps {
   className?: string;
@@ -15,6 +16,7 @@ const AuthForm = ({ className }: AuthFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +32,17 @@ const AuthForm = ({ className }: AuthFormProps) => {
     
     setIsSubmitting(true);
     
-    // Save to localStorage
-    localStorage.setItem('chatlink-user', JSON.stringify({
-      username: username.trim(),
-      createdAt: new Date().toISOString(),
-    }));
+    // Use the login function from AuthContext
+    login(username.trim());
     
-    // Simulate loading
+    // Show success toast
+    toast({
+      title: "Welcome!",
+      description: `You're logged in as ${username}`,
+    });
+    
+    // Redirect to chat page after a brief delay
     setTimeout(() => {
-      toast({
-        title: "Welcome!",
-        description: `You're logged in as ${username}`,
-      });
       navigate('/chat');
     }, 800);
   };

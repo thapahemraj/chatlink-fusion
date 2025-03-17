@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,6 +15,11 @@ const Chat = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  if (!isAuthenticated) {
+    console.log("User not authenticated, redirecting to home");
+    return <Navigate to="/home" replace />;
+  }
+  
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [currentPeerId, setCurrentPeerId] = useState<string | null>(null);
@@ -26,7 +30,6 @@ const Chat = () => {
   const [connecting, setConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('Connecting...');
   
-  // Initialize media and WebRTC
   useEffect(() => {
     const init = async () => {
       try {
@@ -46,7 +49,6 @@ const Chat = () => {
     
     init();
     
-    // Set up event listeners
     const unsubscribeMessage = webRTCService.onMessage((peerId, data) => {
       if (data.type === 'chat') {
         const newMessage: Message = {
@@ -93,14 +95,11 @@ const Chat = () => {
     };
   }, [toast]);
   
-  // Find a new chat partner
   const findNewPeer = useCallback(async () => {
-    // Clean up existing peer connection if any
     if (currentPeerId) {
       webRTCService.disconnectFromPeer(currentPeerId);
     }
     
-    // Reset state
     setRemoteStream(null);
     setCurrentPeerId(null);
     setMessages([]);
@@ -108,12 +107,10 @@ const Chat = () => {
     setConnectionStatus('Looking for a partner...');
     
     try {
-      // Connect to a new random peer
       const peerId = await webRTCService.connectToRandomUser();
       setCurrentPeerId(peerId);
       setConnectionStatus('Establishing connection...');
       
-      // Get the remote stream
       const stream = webRTCService.getRemoteStream(peerId);
       if (stream) {
         setRemoteStream(stream);
@@ -123,12 +120,10 @@ const Chat = () => {
       console.error('Error connecting to peer:', error);
       setConnectionStatus('Connection failed. Retrying...');
       
-      // Retry after a delay
       setTimeout(findNewPeer, 3000);
     }
   }, [currentPeerId]);
   
-  // Handle sending chat messages
   const handleSendMessage = useCallback((text: string) => {
     if (!currentPeerId) return;
     
@@ -147,21 +142,18 @@ const Chat = () => {
     });
   }, [currentPeerId]);
   
-  // Handle toggle mute
   const handleToggleMute = useCallback(() => {
     const newMuteState = !isMuted;
     setIsMuted(newMuteState);
     webRTCService.toggleAudio(!newMuteState);
   }, [isMuted]);
   
-  // Handle toggle video
   const handleToggleVideo = useCallback(() => {
     const newVideoState = !isVideoEnabled;
     setIsVideoEnabled(newVideoState);
     webRTCService.toggleVideo(newVideoState);
   }, [isVideoEnabled]);
   
-  // Handle skip (find new partner)
   const handleSkip = useCallback(() => {
     toast({
       title: "Finding new partner",
@@ -170,30 +162,23 @@ const Chat = () => {
     findNewPeer();
   }, [findNewPeer, toast]);
   
-  // Handle end chat (return to home)
   const handleEndChat = useCallback(() => {
     webRTCService.cleanup();
     navigate('/');
   }, [navigate]);
   
-  // Handle logout
   const handleLogout = useCallback(() => {
     webRTCService.cleanup();
     logout();
     navigate('/');
   }, [logout, navigate]);
   
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-  
   return (
     <div className="min-h-screen flex flex-col bg-secondary/40">
-      <Header showLogout onLogout={handleLogout} />
+      <Header showLogout onLogout={logout} />
       
       <main className="flex-1 p-4 flex flex-col lg:p-6">
         <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col md:flex-row gap-4 relative">
-          {/* Main video area */}
           <div className="flex-1 relative glass-panel rounded-xl overflow-hidden flex flex-col">
             <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-1 rounded-full text-sm animate-fade-in">
               {user?.username}
@@ -210,13 +195,11 @@ const Chat = () => {
                 </div>
               )}
               
-              {/* Self video (picture-in-picture) */}
               <div className="absolute bottom-4 right-4 w-32 h-24 sm:w-40 sm:h-30 rounded-lg overflow-hidden shadow-elevated z-10 animate-scale-in">
                 <VideoContainer stream={localStream} muted />
               </div>
             </div>
             
-            {/* Video controls */}
             <div className="p-4 flex justify-center">
               <VideoControls 
                 isMuted={isMuted}
@@ -230,14 +213,12 @@ const Chat = () => {
               />
             </div>
             
-            {/* Connecting overlay */}
             <ConnectingOverlay 
               isVisible={connecting} 
               status={connectionStatus} 
             />
           </div>
           
-          {/* Chat sidebar */}
           <div 
             className={`
               glass-panel rounded-xl overflow-hidden w-full md:w-80 transition-all duration-300 ease-in-out
