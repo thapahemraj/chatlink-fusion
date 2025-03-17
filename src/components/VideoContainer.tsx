@@ -14,6 +14,17 @@ const VideoContainer = ({ className, stream, muted = false }: VideoContainerProp
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
+      
+      // Ensure video plays when stream is set
+      const playVideo = async () => {
+        try {
+          await videoRef.current?.play();
+        } catch (err) {
+          console.error('Error playing video:', err);
+        }
+      };
+      
+      playVideo();
     }
   }, [stream]);
   

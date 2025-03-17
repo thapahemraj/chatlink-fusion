@@ -32,6 +32,7 @@ const Chat = () => {
       try {
         const stream = await webRTCService.getLocalStream();
         setLocalStream(stream);
+        console.log('Local stream obtained:', stream.id);
         findNewPeer();
       } catch (error) {
         console.error('Failed to get local stream:', error);
@@ -59,6 +60,7 @@ const Chat = () => {
     });
     
     const unsubscribeStream = webRTCService.onStream((peerId, stream) => {
+      console.log('Remote stream received:', stream.id);
       setRemoteStream(stream);
       setConnecting(false);
       

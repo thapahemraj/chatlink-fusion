@@ -1,4 +1,3 @@
-
 // This is a simplified WebRTC service for demo purposes
 
 export interface PeerConnection {
@@ -52,11 +51,15 @@ class WebRTCService {
         
         // Simulate receiving remote stream after a delay
         setTimeout(() => {
-          // Create dummy remote stream
           if (!this.localStream) return;
           
-          // Clone local stream for demo purposes (in a real app, this would be the peer's stream)
-          const fakeRemoteStream = this.localStream.clone();
+          // Create a new MediaStream for the remote peer (simulated)
+          const fakeRemoteStream = new MediaStream();
+          
+          // Clone tracks from local stream for simulation purposes
+          this.localStream.getTracks().forEach(track => {
+            fakeRemoteStream.addTrack(track.clone());
+          });
           
           const peerConnection = this.connections.get(peerId);
           if (peerConnection) {
